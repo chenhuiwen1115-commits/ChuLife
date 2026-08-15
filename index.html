@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F97316">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="中泰记账">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>中泰记账</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="phone">
+
+  <!-- ===== 总览页 ===== -->
+  <section class="page active" id="page-home">
+    <div class="page-head">
+      <div class="greet" id="greetDate">—</div>
+      <div class="badge">🔒 本地账本 · 数据不出手机</div>
+    </div>
+    <div class="total-card" id="totalCard">
+      <div class="label" id="totalLabel">总资产（折合人民币）</div>
+      <div class="amount" id="totalAmount">¥0.00</div>
+      <div class="sub" id="totalSub">—</div>
+    </div>
+    <div class="section-title">我的账户</div>
+    <div class="acct-row" id="accCards"></div>
+    <div class="section-title sec-flex"><span>最近记录</span>
+      <div class="cur-toggle">
+        <button class="toggle-btn sel" data-range="all">全部</button>
+        <button class="toggle-btn" data-range="month">本月</button>
+      </div>
+    </div>
+    <div id="recentList"></div>
+  </section>
+
+  <!-- ===== 记账页 ===== -->
+  <section class="page" id="page-add">
+    <div class="type-switch">
+      <button class="type-btn on-expense" data-type="expense">支出</button>
+      <button class="type-btn" data-type="income">收入</button>
+      <button class="type-btn" data-type="transfer">换汇</button>
+    </div>
+    <div class="transfer-box" id="transferBox" style="display:none;">
+      <div class="t-row">
+        <div class="t-side">
+          <div class="t-label">转出账户</div>
+          <select id="trFrom"></select>
+        </div>
+        <div class="t-arrow">→</div>
+        <div class="t-side">
+          <div class="t-label">转入账户</div>
+          <select id="trTo"></select>
+        </div>
+      </div>
+      <div class="t-row rate-row">
+        <div class="t-side">
+          <div class="t-label">汇率（1 人民币 = ? 泰铢）</div>
+          <input type="number" step="0.01" id="trRate">
+        </div>
+      </div>
+      <div class="t-hint" id="trHint">—</div>
+    </div>
+    <div class="amount-display expense" id="amountDisplay"><span id="amountPrefix">¥ </span><span id="amountValue">0.00</span></div>
+    <div class="cur-hint" id="curHint">—</div>
+    <div class="cur-sel" id="curSel" style="display:none;"></div>
+    <input class="note-input" id="noteInput" placeholder="备注（可选）" maxlength="30">
+    <input type="date" class="date-input" id="dateInput">
+    <div class="cat-grid" id="catGrid"></div>
+    <div class="acct-chips" id="acctChips"></div>
+    <div class="keypad" id="keypad">
+      <button class="key" data-k="1">1</button>
+      <button class="key" data-k="2">2</button>
+      <button class="key" data-k="3">3</button>
+      <button class="key" data-k="4">4</button>
+      <button class="key" data-k="5">5</button>
+      <button class="key" data-k="6">6</button>
+      <button class="key" data-k="7">7</button>
+      <button class="key" data-k="8">8</button>
+      <button class="key" data-k="9">9</button>
+      <button class="key" data-k=".">.</button>
+      <button class="key" data-k="0">0</button>
+      <button class="key" data-k="del">⌫</button>
+    </div>
+    <button class="save-btn" id="saveBtn">保存这笔账</button>
+  </section>
+
+  <!-- ===== 统计页 ===== -->
+  <section class="page" id="page-stats">
+    <div class="page-head">
+      <div class="month-switch">
+        <button class="ms-arrow" id="statPrev">‹</button>
+        <div class="ms-label" id="statMonth">本月</div>
+        <button class="ms-arrow" id="statNext">›</button>
+      </div>
+      <div class="cur-toggle">
+        <button class="toggle-btn sel" data-cur="cny">¥ 人民币</button>
+        <button class="toggle-btn" data-cur="thb">฿ 泰铢</button>
+      </div>
+    </div>
+    <div class="stat-card exp">
+      <div class="s-label">本月支出</div>
+      <div class="s-amount" id="statExp">¥0.00</div>
+    </div>
+    <div class="stat-card inc">
+      <div class="s-label">本月收入</div>
+      <div class="s-amount" id="statInc">¥0.00</div>
+    </div>
+    <div class="section-title">分类占比</div>
+    <div id="barList"></div>
+    <div class="tip-card">💡 换汇是「转账」，不会计入支出；跨币种消费已自动折算。</div>
+  </section>
+
+  <!-- ===== 我的页 ===== -->
+  <section class="page" id="page-me">
+    <div class="menu">
+      <div class="menu-item" data-action="accounts">
+        <div class="mi-ic">💳</div><div class="mi-name">账户管理</div><div class="mi-arrow">›</div>
+      </div>
+      <div class="menu-item" data-action="rates">
+        <div class="mi-ic">💱</div><div class="mi-name">汇率管理</div><div class="mi-arrow">›</div>
+      </div>
+      <div class="menu-item" data-action="import">
+        <div class="mi-ic">📥</div><div class="mi-name">账单导入</div><div class="mi-tag">V2</div><div class="mi-arrow">›</div>
+      </div>
+      <div class="menu-item" data-action="remind">
+        <div class="mi-ic">⏰</div><div class="mi-name">每日提醒</div><div class="mi-tag">V2</div><div class="mi-arrow">›</div>
+      </div>
+      <div class="menu-item" data-action="budget">
+        <div class="mi-ic">🎯</div><div class="mi-name">预算管理</div><div class="mi-tag">V2</div><div class="mi-arrow">›</div>
+      </div>
+      <div class="menu-item" data-action="backup">
+        <div class="mi-ic">🗂</div><div class="mi-name">数据备份</div><div class="mi-arrow">›</div>
+      </div>
+    </div>
+    <div class="footer">中泰记账 V1 · 数据仅保存在本机浏览器</div>
+  </section>
+
+  <!-- ===== 子页面：账户管理 ===== -->
+  <section class="page" id="page-sub-accounts">
+    <div class="sub-head">
+      <button class="back-btn" data-back="me">‹</button>
+      <div class="sub-title">账户管理</div>
+      <button class="head-add" id="btnAddAccount">＋ 新建</button>
+    </div>
+    <div id="accountList"></div>
+  </section>
+
+  <!-- ===== 子页面：账户表单 ===== -->
+  <section class="page" id="page-sub-account-form">
+    <div class="sub-head">
+      <button class="back-btn" data-back="sub-accounts">‹</button>
+      <div class="sub-title" id="accFormTitle">新建账户</div>
+    </div>
+    <div class="form-card">
+      <div class="form-row">
+        <label>快捷模板（点一下自动填好）</label>
+        <div class="acct-chips" id="tplChips" style="margin:0;"></div>
+      </div>
+      <div class="form-row">
+        <label>账户名称</label>
+        <input id="accName" placeholder="如：支付宝" maxlength="12">
+      </div>
+      <div class="form-row">
+        <label>图标</label>
+        <div class="emoji-pick" id="accEmoji"></div>
+      </div>
+      <div class="form-row">
+        <label>币种</label>
+        <select id="accCurrency">
+          <option value="CNY">人民币 ¥</option>
+          <option value="THB">泰铢 ฿</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>初始余额（现在账户里有多少钱）</label>
+        <input id="accBalance" type="number" step="0.01" placeholder="0.00">
+      </div>
+      <button class="save-btn" id="btnSaveAccount">保存账户</button>
+      <button class="btn-danger" id="btnDeleteAccount" style="display:none;">删除账户</button>
+    </div>
+  </section>
+
+  <!-- ===== 子页面：汇率管理 ===== -->
+  <section class="page" id="page-sub-rates">
+    <div class="sub-head">
+      <button class="back-btn" data-back="me">‹</button>
+      <div class="sub-title">汇率管理</div>
+    </div>
+    <div class="form-card">
+      <div class="form-row">
+        <label>1 人民币 = ? 泰铢</label>
+        <input id="rateInput" type="number" step="0.01" placeholder="4.94">
+      </div>
+      <div class="rate-info" id="rateInfo">—</div>
+      <button class="save-btn" id="btnSaveRate">保存汇率</button>
+      <button class="btn-secondary" id="btnFetchRate">联网获取最新汇率</button>
+    </div>
+  </section>
+
+  <!-- ===== 子页面：数据备份 ===== -->
+  <section class="page" id="page-sub-backup">
+    <div class="sub-head">
+      <button class="back-btn" data-back="me">‹</button>
+      <div class="sub-title">数据备份</div>
+    </div>
+    <div class="form-card">
+      <div class="rate-info">⚠️ 你的账本数据只存在这台设备的浏览器里，换手机、清缓存都会丢失。<br>建议：定期点「导出备份文件」保存一份；换设备时用「从备份文件恢复」。</div>
+      <button class="save-btn" id="btnExport">导出备份文件</button>
+      <button class="btn-secondary" id="btnImport">从备份文件恢复</button>
+      <button class="btn-danger" id="btnClearData">清空账本</button>
+      <input type="file" id="importFile" accept=".json,application/json" style="display:none;">
+    </div>
+  </section>
+
+  <!-- ===== 底部导航 ===== -->
+  <nav class="tabbar">
+    <button class="tab active" data-page="home"><span class="ic">🏠</span>总览</button>
+    <button class="fab" id="fabBtn">＋</button>
+    <button class="tab" data-page="stats"><span class="ic">📊</span>统计</button>
+    <button class="tab" data-page="me"><span class="ic">👤</span>我的</button>
+  </nav>
+
+</div>
+
+<!-- 提示浮层 -->
+<div id="toast"></div>
+<!-- 底部弹出面板（记录编辑/删除） -->
+<div class="sheet-mask" id="sheetMask"><div class="sheet" id="sheet"></div></div>
+
+<script src="js/data.js"></script>
+<script src="js/store.js"></script>
+<script src="js/rates.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
