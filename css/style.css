@@ -10,6 +10,8 @@
   --line:#E5E7EB;        /* 分隔线 */
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+/* 禁止双击缩放（配合 viewport 与 JS 拦截捏合，防止误触） */
+html,body{touch-action:manipulation;}
 body{
   background:#E5E7EB;
   font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;

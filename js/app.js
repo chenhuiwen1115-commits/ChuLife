@@ -490,6 +490,10 @@ function renderBars(y, m){
 /* ================= 初始化 ================= */
 function renderAll(){ renderHome(); renderStats(); }
 function init(){
+  // 禁止双指捏合缩放（iOS Safari 会忽略 viewport 的 user-scalable=no，需 JS 拦截）
+  document.addEventListener('gesturestart', e => e.preventDefault());
+  document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+
   const d = new Date();
   $('#greetDate').textContent = (d.getMonth() + 1) + '月' + d.getDate() + '日 · 周' + '日一二三四五六'[d.getDay()];
   $('#dateInput').value = todayStr();
